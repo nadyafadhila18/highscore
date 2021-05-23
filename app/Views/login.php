@@ -1,7 +1,7 @@
 <?= $this->extend('layout/template'); ?>
 
 <?= $this->section('content'); ?>
-
+<h1> Halaman Login </h1>
 <div class="row">
     <div class="col">
         <form action="/highscore/login_process" method="POST">
