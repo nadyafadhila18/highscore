@@ -9,22 +9,66 @@ class Login extends BaseController {
 	protected $admin_model;
 
 	public function __construct() {
-		$this->users_model = new Users_model(); //untuk memanggil model sekali dan bisa digunakan berkali2
-		$this->admin_model = new Admin_model();
+		parent::__construct();		
+		$this->load->model('m_highscore');
 	}
 
     //tampilin halaman login
 	public function index() {
-		$data = [ //jangan lupa $data nanti dikirimkan ke return view ya
-			'title' => 'Home' 
-		];
-
-        return view('login', $data);
+		if ($this->session->userdata('login')) {
+			if ($this->session->userdata('level') == 'admin') {
+				redirect('highscore/dashboard');
+			} else {
+				if ($this->session->userdata('isVote')) {
+					redirect('highscore/terimakasih');
+				} else {
+					redirect('highscore/dashboard');
+				}
+			}
+		} else {
+			$this->load->view('login');
+		}
 	}
 
     //buat ngeproses login
     public function signin() {
         //tutorial, kalo udah selesai mungkin bisa dihapus, atau dicut dimana gitu
+	    $whereuser = array(
+            'nim' => $this->input->post('username')
+		);
+		$whereadmin = array(
+            'username' => $this->input->post('username')
+		);
+		$userpass = $this->input->post('password');
+		if($this->m_highscore->can_login_admin($whereadmin, $userpass)){
+			redirect('login/enter_admin');
+		}
+		else if($this->m_highscore->can_login_user($whereuser, $userpass)){
+			if ($this->session->userdata('isVote')) {
+				redirect('highscore/terimakasih');
+			} else {
+				redirect('highscore/dashboard');
+			}
+		}
+		else{
+			$this->session->set_flashdata('error','Silakan cek username atau password anda');
+			redirect('login');
+		}
+	}
+	public function enter_user() {
+		if ($this->session->userdata('login')) {
+			redirect('highscore/dashboard');
+		} else {
+			redirect('login');
+		}
+	}
+	public function enter_admin() {
+		if ($this->session->userdata('login')) {
+			redirect('highscore/dashboard');
+		} else {
+			redirect('login');
+		}
+	}
         //ambil kiriman data email itu buat email user atau username admin
         //ambil juga passwordnya. Jadi nanti action diarahin ke sini
 
